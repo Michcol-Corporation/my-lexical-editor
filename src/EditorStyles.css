@@ -1,0 +1,28 @@
+/* EditorStyles.css */
+
+.editorContainer {
+  border: 1px solid #ccc;
+  padding: 16px;
+  border-radius: 4px;
+  margin: auto;
+  max-width: 600px;
+  min-height: 150px;
+  background: #fff;
+  position: relative;
+}
+
+.editorContent {
+  min-height: 130px;
+  overflow: auto;
+}
+
+.editorPlaceholder {
+  color: #a9a9a9;
+  display: none; /* Domyślnie ukryj placeholder */
+}
+
+.editorContent:empty:before {
+  content: attr(data-placeholder);
+  display: block; /* Pokaż placeholder tylko gdy ContentEditable jest pusty */
+  color: #a9a9a9;
+}
