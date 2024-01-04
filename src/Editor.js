@@ -1,82 +1,85 @@
-import React, { useEffect } from 'react';
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
-// Remove the unused import
-import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
-//import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
-import './EditorStyles.css'; // Ścieżka do Twojego pliku CSS
-// Definicja motywu edytora
-const theme = {
-  editorContent: {
-    color: 'blue',
-    fontSize: '18px',
+import ExampleTheme from "./themes/ExampleTheme";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
+import TreeViewPlugin from "./plugins/TreeViewPlugin";
+import ToolbarPlugin from "./plugins/ToolbarPlugin";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import { AutoLinkNode, LinkNode } from "@lexical/link";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { TRANSFORMERS } from "@lexical/markdown";
+
+import ListMaxIndentLevelPlugin from "./plugins/ListMaxIndentLevelPlugin";
+import CodeHighlightPlugin from "./plugins/CodeHighlightPlugin";
+import AutoLinkPlugin from "./plugins/AutoLinkPlugin";
+
+import { ParagraphNode } from "lexical";
+import { CustomParagraphNode } from "./nodes/CustomParagraphNode";
+
+function Placeholder() {
+  return <div className="editor-placeholder">Enter some rich text...</div>;
+}
+
+const editorConfig = {
+  // The editor theme
+  theme: ExampleTheme,
+  // Handling of errors during update
+  onError(error) {
+    throw error;
   },
-  editorPlaceholder: {
-    color: 'gray',
-    fontStyle: 'italic',
-  },
-  DisplayContent: {
-    color: 'blue',
-    fontSize: '18px',
-    // Dodaj więcej stylów tutaj...
-  }
+  // Any custom nodes go here
+  nodes: [
+    HeadingNode,
+    ListNode,
+    ListItemNode,
+    QuoteNode,
+    CodeNode,
+    CodeHighlightNode,
+    TableNode,
+    TableCellNode,
+    TableRowNode,
+    AutoLinkNode,
+    LinkNode,
+    CustomParagraphNode,
+    {
+      replace: ParagraphNode,
+      with: (node) => {
+        return new CustomParagraphNode();
+      }
+    }
+  ]
 };
 
-// Funkcja wywoływana przy każdej zmianie w edytorze
-function onChange(editorState) {
-  editorState.read(() => {
-    // Tutaj możesz odczytać zawartość edytora
-  });
-}
-
-// Twój własny plugin do auto-fokusu
-function MyCustomAutoFocusPlugin() {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    // Skup się na edytorze, gdy komponent zostanie zamontowany
-    editor.focus();
-  }, [editor]);
-
-  return null;
-}
-
-// Obsługa błędów Lexical
-function onError(error) {
-  console.error('Lexical editor encountered an error:', error);
-}
-
-// Główny komponent edytora
-function Editor() {
-  // Konfiguracja początkowa dla LexsscalComposer
-  const initialConfig = {
-    namespace: 'MyEditor',
-    theme,
-    onError,
-  };
+export default function Editor() {
   return (
-  <LexicalComposer initialConfig={initialConfig}>
-  <div className="editorContainer">
-    <PlainTextPlugin
-      contentEditable={
-        <ContentEditable 
-          className="editorContent"
-          data-placeholder="Wpisz tekst..." // Dodaj atrybut data-placeholder
-        />
-      }
-      placeholder={null} // Usuń placeholder jako oddzielny element
-    />
-    <OnChangePlugin onChange={onChange} />
-    <HistoryPlugin />
-    <MyCustomAutoFocusPlugin />
-  </div>
-  <LexicalErrorBoundary />
-  {/* ... */}
-</LexicalComposer>
-);
+    <LexicalComposer initialConfig={editorConfig}>
+      <div className="editor-container">
+        <ToolbarPlugin />
+        <div className="editor-inner">
+          <RichTextPlugin
+            contentEditable={<ContentEditable className="editor-input" />}
+            placeholder={<Placeholder />}
+            ErrorBoundary={LexicalErrorBoundary}
+          />
+          <HistoryPlugin />
+          <TreeViewPlugin />
+          <AutoFocusPlugin />
+          <CodeHighlightPlugin />
+          <ListPlugin />
+          <LinkPlugin />
+          <AutoLinkPlugin />
+          <ListMaxIndentLevelPlugin maxDepth={7} />
+          <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+        </div>
+      </div>
+    </LexicalComposer>
+  );
 }
-export default Editor;
